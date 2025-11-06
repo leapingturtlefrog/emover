@@ -12,11 +12,9 @@ curl -fsSL https://emover.sh/install.sh | bash
 
 ### Windows
 
-```powershell
+```bash
 irm https://emover.sh/install.ps1 | iex
 ```
-
-<sub>Alternatively: [install.sh](https://raw.githubusercontent.com/leapingturtlefrog/emover/main/install.sh) | [install.ps1](https://raw.githubusercontent.com/leapingturtlefrog/emover/main/install.ps1)</sub>
 
 ## Usage
 
