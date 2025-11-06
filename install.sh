@@ -22,5 +22,20 @@ else
     echo "Error: curl or wget required"; exit 1
 fi
 chmod +x "$DIR/emover"
-echo "Installed! Run: emover --help"
-[[ ":$PATH:" != *":$DIR:"* ]] && echo "Add to PATH: export PATH=\"\$PATH:$DIR\""
+if [[ ":$PATH:" != *":$DIR:"* ]]; then
+    for rc in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile"; do
+        if [[ -f "$rc" ]]; then
+            echo "export PATH=\"\$PATH:$DIR\"" >> "$rc"
+            echo "Added to PATH in $rc"
+            break
+        fi
+    done
+fi
+echo "Installed successfully!"
+echo ""
+echo "Usage:"
+echo "  emover              # Remove emojis from current directory"
+echo "  emover ./src        # Remove emojis from specific directory"
+echo "  emover --dry-run .  # Preview changes without modifying files"
+echo ""
+echo "Restart your shell or run: source ~/.bashrc"

@@ -17,4 +17,9 @@ if($userPath -notlike "*$dir*"){
     $env:Path+=";$dir"
     Write-Host "Added to PATH"
 }
-Write-Host "Installed! Run: emover --help"
+Write-Host "Installed successfully!"
+Write-Host ""
+Write-Host "Usage:"
+Write-Host "  emover              # Remove emojis from current directory"
+Write-Host "  emover .\src        # Remove emojis from specific directory"
+Write-Host "  emover --dry-run .  # Preview changes without modifying files"

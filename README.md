@@ -1,29 +1,31 @@
-# Emover
+# Emover - Emoji Remover
 
-Remove emojis from your codebase. Blazingly fast, parallel, cross-platform.
+Remove emojis from your codebase. Blazingly fast, parallel, and cross-platform.
 
 ## Install
 
 ### Linux/macOS
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/leapingturtlefrog/emover/main/install.sh | bash
+curl -fsSL https://emover.sh/install.sh | bash
 ```
 
 ### Windows
 
 ```powershell
-irm https://raw.githubusercontent.com/leapingturtlefrog/emover/main/install.ps1 | iex
+irm https://emover.sh/install.ps1 | iex
 ```
+
+<sub>Alternatively: [install.sh](https://raw.githubusercontent.com/leapingturtlefrog/emover/main/install.sh) | [install.ps1](https://raw.githubusercontent.com/leapingturtlefrog/emover/main/install.ps1)</sub>
 
 ## Usage
 
 ```bash
-emover
-emover ./src
-emover --dry-run ./code
-emover --skip ./docs
-emover -e "*.md" -e "*.txt" ./project
+emover                                              # Current directory
+emover ./src                                        # Specific directory
+emover --dry-run ./code                             # Preview changes
+emover --skip ./docs                                # Skip markdown files
+emover --exclude "*.md" --exclude "*.txt" ./project # Exclude patterns
 ```
 
 ## Options

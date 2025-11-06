@@ -46,7 +46,52 @@ jobs:
           else
             cp emover/target/${{ matrix.target }}/release/emover ${{ matrix.name }}
           fi
+      - name: Test binary directly
+        if: matrix.target != 'aarch64-unknown-linux-gnu' && matrix.target != 'aarch64-apple-darwin'
+        shell: bash
+        run: |
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            ./${{ matrix.name }} --version
+            ./${{ matrix.name }} --help
+          else
+            chmod +x ${{ matrix.name }}
+            ./${{ matrix.name }} --version
+            ./${{ matrix.name }} --help
+          fi
+      - name: Test install script (Linux/macOS)
+        if: matrix.os != 'windows-latest' && matrix.target != 'aarch64-unknown-linux-gnu' && matrix.target != 'aarch64-apple-darwin'
+        run: |
+          mkdir -p fake-local
+          cp ${{ matrix.name }} fake-local/emover
+          chmod +x fake-local/emover
+          cp install.sh test-install.sh
+          sed -i 's|curl -fsSL "$URL" -o "$DIR/emover"|cp fake-local/emover "$DIR/emover"|' test-install.sh
+          sed -i 's|wget -q "$URL" -O "$DIR/emover"|cp fake-local/emover "$DIR/emover"|' test-install.sh
+          bash test-install.sh
+          export PATH="$HOME/.local/bin:$PATH"
+          emover --version
+          echo "test 😀 emoji" > test-file.txt
+          emover --dry-run test-file.txt
+          echo "Installation test passed!"
+      - name: Test install script (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force -Path fake-local
+          Copy-Item ${{ matrix.name }} fake-local/emover.exe
+          (Get-Content install.ps1) -replace 'Invoke-WebRequest -Uri \$url -OutFile \$dest','Copy-Item fake-local/emover.exe $dest' | Set-Content test-install.ps1
+          .\test-install.ps1
+          emover --version
+          "test 😀 emoji" | Out-File -Encoding UTF8 test-file.txt
+          emover --dry-run test-file.txt
+          Write-Host "Installation test passed!"
+      - name: Test binary (cross-compiled ARM64)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update && sudo apt-get install -y qemu-user
+          chmod +x ${{ matrix.name }}
+          qemu-aarch64 -L /usr/aarch64-linux-gnu ${{ matrix.name }} --version
+          qemu-aarch64 -L /usr/aarch64-linux-gnu ${{ matrix.name }} --help
       - uses: softprops/action-gh-release@v1
         with:
           files: ${{ matrix.name }}
-
