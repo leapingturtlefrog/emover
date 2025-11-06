@@ -1,6 +1,6 @@
 # Emover
 
-Remove emojis from your codebase. Fast, parallel, cross-platform.
+Remove emojis from your codebase. Blazingly fast, parallel, cross-platform.
 
 ## Install
 
