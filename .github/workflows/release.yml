@@ -76,7 +76,7 @@ jobs:
           export PATH="$HOME/.local/bin:$PATH"
           emover --version
           echo "test 😀 emoji" > test-file.txt
-          emover --dry-run test-file.txt
+          echo "y" | emover test-file.txt
           echo "Installation test passed!"
       - name: Test install script (Windows)
         if: matrix.os == 'windows-latest'
@@ -88,7 +88,7 @@ jobs:
           .\test-install.ps1
           emover --version
           "test 😀 emoji" | Out-File -Encoding UTF8 test-file.txt
-          emover --dry-run test-file.txt
+          "y" | emover test-file.txt
           Write-Host "Installation test passed!"
       - name: Test binary (cross-compiled ARM64)
         if: matrix.target == 'aarch64-unknown-linux-gnu'
