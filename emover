@@ -1,0 +1,281 @@
+#!/usr/bin/env bash
+
+# Emover - Emoji Removal Tool
+# Removes all emojis from your codebase
+
+set -euo pipefail
+
+VERSION="1.0.0"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Default values
+DIRECTORY="."
+DRY_RUN=false
+VERBOSE=false
+SKIP_MARKDOWN=false
+EXCLUDE_PATTERNS=()
+
+# Stats
+FILES_PROCESSED=0
+FILES_MODIFIED=0
+EMOJIS_REMOVED=0
+
+# Help message
+show_help() {
+    cat << EOF
+Emover v${VERSION} - Remove all emojis from your codebase
+
+Usage: emover [OPTIONS] [DIRECTORY]
+
+Arguments:
+  DIRECTORY              Directory to process (default: current directory)
+
+Options:
+  -e, --exclude PATTERN  Exclude files matching pattern (can be used multiple times)
+  -d, --dry-run          Show what would be changed without making changes
+  -v, --verbose          Show detailed output
+  --skip-markdown        Skip markdown files (*.md, *.markdown)
+  -h, --help             Show this help message
+  --version              Show version
+
+Examples:
+  emover                              # Process current directory
+  emover ./src                        # Process src directory
+  emover -d ./src                     # Dry run on src directory
+  emover --skip-markdown ./docs       # Process docs, skip markdown files
+  emover -e "*.md" -e "*.txt" ./code  # Exclude .md and .txt files
+
+EOF
+}
+
+# Parse command line arguments
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -h|--help)
+                show_help
+                exit 0
+                ;;
+            --version)
+                echo "Emover v${VERSION}"
+                exit 0
+                ;;
+            -d|--dry-run)
+                DRY_RUN=true
+                shift
+                ;;
+            -v|--verbose)
+                VERBOSE=true
+                shift
+                ;;
+            --skip-markdown)
+                SKIP_MARKDOWN=true
+                shift
+                ;;
+            -e|--exclude)
+                if [[ -n "${2:-}" ]]; then
+                    EXCLUDE_PATTERNS+=("$2")
+                    shift 2
+                else
+                    echo -e "${RED}Error: --exclude requires a pattern${NC}"
+                    exit 1
+                fi
+                ;;
+            -*)
+                echo -e "${RED}Error: Unknown option: $1${NC}"
+                show_help
+                exit 1
+                ;;
+            *)
+                DIRECTORY="$1"
+                shift
+                ;;
+        esac
+    done
+}
+
+# Check if file should be excluded
+should_exclude() {
+    local file="$1"
+    local basename=$(basename "$file")
+
+    # Skip markdown if flag is set
+    if [[ "$SKIP_MARKDOWN" == true ]]; then
+        if [[ "$basename" =~ \.(md|markdown)$ ]]; then
+            return 0
+        fi
+    fi
+
+    # Check custom exclude patterns
+    if [[ ${#EXCLUDE_PATTERNS[@]} -gt 0 ]]; then
+        for pattern in "${EXCLUDE_PATTERNS[@]}"; do
+            # Convert glob pattern to regex
+            local regex_pattern="${pattern//\*/.*}"
+            regex_pattern="${regex_pattern//\?/.}"
+
+            if [[ "$basename" =~ $regex_pattern ]] || [[ "$file" =~ $regex_pattern ]]; then
+                return 0
+            fi
+        done
+    fi
+
+    return 1
+}
+
+# Check if file is binary
+is_binary() {
+    local file="$1"
+
+    # Use file command if available
+    if command -v file &> /dev/null; then
+        if file "$file" | grep -q "text"; then
+            return 1
+        else
+            return 0
+        fi
+    fi
+
+    # Fallback: check for null bytes
+    if LC_ALL=C grep -q $'\0' "$file" 2>/dev/null; then
+        return 0
+    fi
+
+    return 1
+}
+
+# Remove emojis from a file
+process_file() {
+    local file="$1"
+
+    FILES_PROCESSED=$((FILES_PROCESSED + 1))
+
+    # Check if should be excluded
+    if should_exclude "$file"; then
+        if [[ "$VERBOSE" == true ]]; then
+            echo -e "${YELLOW}⏭️  Excluding: $file${NC}"
+        fi
+        return
+    fi
+
+    # Check if binary
+    if is_binary "$file"; then
+        if [[ "$VERBOSE" == true ]]; then
+            echo -e "${YELLOW}⏭️  Skipping binary file: $file${NC}"
+        fi
+        return
+    fi
+
+    # Create temp file
+    local temp_file=$(mktemp)
+
+    # Remove emojis using sed with comprehensive Unicode ranges
+    # This uses Perl regex for better Unicode support
+    if command -v perl &> /dev/null; then
+        # Use Perl for comprehensive emoji removal
+        perl -C -pe 's/[\x{1F600}-\x{1F64F}]|[\x{1F300}-\x{1F5FF}]|[\x{1F680}-\x{1F6FF}]|[\x{1F1E0}-\x{1F1FF}]|[\x{2600}-\x{26FF}]|[\x{2700}-\x{27BF}]|[\x{1F900}-\x{1F9FF}]|[\x{1F018}-\x{1F270}]|[\x{238C}-\x{2454}]|[\x{20D0}-\x{20FF}]|[\x{FE00}-\x{FE0F}]|[\x{1F004}]|[\x{1F0CF}]|[\x{1F170}-\x{1F251}]|[\x{1F004}-\x{1F9E6}]|[\x{200D}]|[\x{2640}-\x{2642}]|[\x{2600}-\x{2B55}]|[\x{23CF}]|[\x{23E9}-\x{23FA}]|[\x{231A}-\x{231B}]|[\x{2328}]|[\x{23CF}]|[\x{23E9}-\x{23FA}]|[\x{25AA}-\x{25AB}]|[\x{25B6}]|[\x{25C0}]|[\x{25FB}-\x{25FE}]|[\x{2934}-\x{2935}]|[\x{2B05}-\x{2B07}]|[\x{2B1B}-\x{2B1C}]|[\x{3030}]|[\x{303D}]|[\x{3297}]|[\x{3299}]|[\x{1FA70}-\x{1FAFF}]|[\x{E0020}-\x{E007F}]//g' "$file" > "$temp_file"
+    else
+        # Fallback to sed (less comprehensive but works without Perl)
+        LC_ALL=C sed 's/[\xF0\x9F[\x98-\x9F][\x80-\xBF]]//g; s/[\xE2[\x80-\xBF][\x80-\xBF]]//g' "$file" > "$temp_file"
+    fi
+
+    # Check if file was modified
+    if ! cmp -s "$file" "$temp_file"; then
+        # Count emojis removed
+        local original_size=$(wc -c < "$file")
+        local new_size=$(wc -c < "$temp_file")
+        local chars_removed=$((original_size - new_size))
+
+        # Rough estimate: most emojis are 4 bytes in UTF-8
+        local emojis_in_file=$((chars_removed / 4))
+        if [[ $emojis_in_file -lt 1 && $chars_removed -gt 0 ]]; then
+            emojis_in_file=1
+        fi
+
+        EMOJIS_REMOVED=$((EMOJIS_REMOVED + emojis_in_file))
+        FILES_MODIFIED=$((FILES_MODIFIED + 1))
+
+        if [[ "$DRY_RUN" == true ]]; then
+            echo -e "${BLUE}🔍 Would remove ~${emojis_in_file} emoji(s) from: $file${NC}"
+        else
+            cp "$temp_file" "$file"
+            echo -e "${GREEN}✓ Removed ~${emojis_in_file} emoji(s) from: $file${NC}"
+        fi
+    else
+        if [[ "$VERBOSE" == true ]]; then
+            echo -e "${GREEN}✓ No emojis found: $file${NC}"
+        fi
+    fi
+
+    rm "$temp_file"
+}
+
+# Main function
+main() {
+    parse_args "$@"
+
+    # Verify directory exists
+    if [[ ! -d "$DIRECTORY" ]]; then
+        echo -e "${RED}Error: Directory not found: $DIRECTORY${NC}"
+        exit 1
+    fi
+
+    # Print header
+    echo "🧹 Emover - Emoji Removal Tool"
+    echo ""
+    echo "Target directory: $(cd "$DIRECTORY" && pwd)"
+    echo "Dry run: $DRY_RUN"
+
+    if [[ "$SKIP_MARKDOWN" == true ]]; then
+        echo "Skipping markdown files: Yes"
+    fi
+
+    if [[ ${#EXCLUDE_PATTERNS[@]} -gt 0 ]]; then
+        echo "Excluding patterns: ${EXCLUDE_PATTERNS[*]}"
+    fi
+
+    echo ""
+
+    # Find all files (excluding common directories)
+    local exclude_dirs=(
+        ".git"
+        "node_modules"
+        ".svn"
+        ".hg"
+        "dist"
+        "build"
+        ".DS_Store"
+    )
+
+    local find_cmd="find \"$DIRECTORY\" -type f"
+
+    # Add exclusions to find command
+    for dir in "${exclude_dirs[@]}"; do
+        find_cmd+=" -not -path \"*/${dir}/*\""
+    done
+
+    # Process files
+    while IFS= read -r file; do
+        process_file "$file"
+    done < <(eval "$find_cmd")
+
+    # Print summary
+    echo ""
+    echo -e "${GREEN}✅ Done!${NC}"
+    echo "Files processed: $FILES_PROCESSED"
+    echo "Files modified: $FILES_MODIFIED"
+    echo "Emojis removed (approx): $EMOJIS_REMOVED"
+
+    if [[ "$DRY_RUN" == true ]]; then
+        echo ""
+        echo -e "${YELLOW}⚠️  This was a dry run. No files were actually modified.${NC}"
+    fi
+}
+
+# Run main function
+main "$@"

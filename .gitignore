@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Test files
+test-repos/
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Backup files
+*.bak
+*.backup
