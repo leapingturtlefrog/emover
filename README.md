@@ -32,7 +32,7 @@ emover -e "*.md" "*.txt" .         # Exclude patterns
 -e, --exclude [PATTERNS]...  Exclude file patterns (e.g., -e "*.md" "*.txt")
 --no-gitignore         Don't respect .gitignore
 --keep-symbols         Keep Unicode symbols (e.g., ✓ ★ ⚠)
--V, --version          Show version
+-v, --version          Show version
 -h, --help             Show help
 ```
 

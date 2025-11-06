@@ -15,9 +15,9 @@ struct Args {
     exclude: Vec<String>,
     #[arg(long, help = "Don't respect .gitignore")]
     no_gitignore: bool,
-    #[arg(long, help = "Keep Unicode symbols (✓ ★ ⚠)")]
+    #[arg(long, help = "Keep Unicode symbols (e.g., ✓ ★ ⚠)")]
     keep_symbols: bool,
-    #[arg(short = 'V', long)]
+    #[arg(short = 'v', long)]
     version: bool,
 }
 
@@ -35,27 +35,38 @@ fn main() {
     };
     
     let mut files = Vec::new();
+    let mut total_found = 0;
+    
     for p in &args.paths {
         if p.is_file() {
             files.push(p.clone());
+            total_found += 1;
         } else if p.is_dir() {
-            let mut w = WalkDir::new(p);
-            if !args.no_gitignore {
-                w = w.filter_entry(|e| {
+            let walker = WalkDir::new(p).into_iter()
+                .filter_entry(|e| {
+                    if args.no_gitignore {
+                        return true;
+                    }
                     let name = e.file_name().to_string_lossy();
-                    !name.starts_with('.') || name == "."
+                    !name.starts_with('.') || name == "." || e.depth() == 0
                 });
-            }
             files.extend(
-                w.into_iter()
+                walker
                     .filter_map(Result::ok)
-                    .filter(|e| e.file_type().is_file())
-                    .filter(|e| !e.path().to_string_lossy().contains("/.git/") && !e.path().to_string_lossy().contains("/node_modules/"))
+                    .filter(|e| {
+                        if e.file_type().is_file() {
+                            total_found += 1;
+                            !e.path().to_string_lossy().contains("/.git/") && !e.path().to_string_lossy().contains("/node_modules/")
+                        } else {
+                            false
+                        }
+                    })
                     .map(|e| e.path().to_path_buf())
             );
         }
     }
     
+    let all_files_count = files.len();
     let files: Vec<_> = files.into_iter()
         .filter(|p| args.exclude.iter().all(|pat| !p.file_name().unwrap().to_string_lossy().contains(pat.trim_matches(|c| c == '\'' || c == '"'))))
         .collect();
@@ -97,5 +108,7 @@ fn main() {
     }).count();
     
     let total: usize = changes.iter().map(|(_, c)| c).sum();
-    println!("\nFiles scanned: {}, Modified: {}, Emojis removed: {}", files.len(), modified, total);
+    let ignored = total_found - files.len();
+    println!("\nFiles scanned: {}, Modified: {}, Ignored: {}, Emojis removed: {}", 
+        files.len(), modified, ignored, total);
 }
