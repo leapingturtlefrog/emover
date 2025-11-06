@@ -65,8 +65,13 @@ jobs:
           cp ${{ matrix.name }} fake-local/emover
           chmod +x fake-local/emover
           cp install.sh test-install.sh
-          sed -i 's|curl -fsSL "$URL" -o "$DIR/emover"|cp fake-local/emover "$DIR/emover"|' test-install.sh
-          sed -i 's|wget -q "$URL" -O "$DIR/emover"|cp fake-local/emover "$DIR/emover"|' test-install.sh
+          if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' 's|curl -fsSL "$URL" -o "$DIR/emover"|cp fake-local/emover "$DIR/emover"|' test-install.sh
+            sed -i '' 's|wget -q "$URL" -O "$DIR/emover"|cp fake-local/emover "$DIR/emover"|' test-install.sh
+          else
+            sed -i 's|curl -fsSL "$URL" -o "$DIR/emover"|cp fake-local/emover "$DIR/emover"|' test-install.sh
+            sed -i 's|wget -q "$URL" -O "$DIR/emover"|cp fake-local/emover "$DIR/emover"|' test-install.sh
+          fi
           bash test-install.sh
           export PATH="$HOME/.local/bin:$PATH"
           emover --version
