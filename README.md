@@ -6,12 +6,16 @@ Remove all emojis from your codebase. Works with any file type.
 
 **Linux/Mac:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/leapingturtlefrog/emover/main/install.sh | bash
+git clone https://github.com/leapingturtlefrog/emover.git
+cd emover
+./install.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-iwr -useb https://raw.githubusercontent.com/leapingturtlefrog/emover/main/install.ps1 | iex
+git clone https://github.com/leapingturtlefrog/emover.git
+cd emover
+.\install.ps1
 ```
 
 ## Usage

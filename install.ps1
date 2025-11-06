@@ -5,20 +5,14 @@
     Emover Installation Script for Windows/PowerShell
 
 .DESCRIPTION
-    Installs emover to your system. Can be run directly or via web install.
+    Installs emover to your system from the local directory.
 
 .EXAMPLE
     .\install.ps1
-    Run locally
-
-.EXAMPLE
-    iwr -useb https://raw.githubusercontent.com/leapingturtlefrog/emover/main/install.ps1 | iex
-    Install from GitHub
+    Run installation
 #>
 
 $ErrorActionPreference = 'Stop'
-
-$GITHUB_RAW_URL = "https://raw.githubusercontent.com/leapingturtlefrog/emover/main/emover.ps1"
 
 # Determine installation directory
 if ($IsWindows -or $env:OS -eq "Windows_NT") {
@@ -47,28 +41,17 @@ Write-Host "Installing emover..."
 
 # Check if we have the script locally
 $scriptPath = Join-Path $PSScriptRoot "emover.ps1"
-if (Test-Path $scriptPath) {
-    # Local installation
-    Copy-Item -Path $scriptPath -Destination (Join-Path $INSTALL_DIR "emover.ps1") -Force
-    Write-Host "✓ Copied local script" -ForegroundColor Green
-} else {
-    # Download from GitHub
-    Write-Host "Downloading from GitHub..."
-    try {
-        $destination = Join-Path $INSTALL_DIR "emover.ps1"
-        Invoke-WebRequest -Uri $GITHUB_RAW_URL -OutFile $destination -UseBasicParsing
-        Write-Host "✓ Downloaded from GitHub" -ForegroundColor Green
-    } catch {
-        Write-Host "✗ Download failed: $($_.Exception.Message)" -ForegroundColor Red
-        exit 1
-    }
+if (-not (Test-Path $scriptPath)) {
+    Write-Host "✗ Error: emover.ps1 not found in $PSScriptRoot" -ForegroundColor Red
+    exit 1
 }
 
-$installedScript = Join-Path $INSTALL_DIR "emover.ps1"
-if (Test-Path $installedScript) {
+# Copy script
+try {
+    Copy-Item -Path $scriptPath -Destination (Join-Path $INSTALL_DIR "emover.ps1") -Force
     Write-Host "✓ Successfully installed emover to $INSTALL_DIR" -ForegroundColor Green
-} else {
-    Write-Host "✗ Installation failed" -ForegroundColor Red
+} catch {
+    Write-Host "✗ Installation failed: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }
 
