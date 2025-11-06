@@ -34,8 +34,13 @@ fi
 echo "Installing emover..."
 
 # Check if we have the script locally, otherwise download it
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [[ -f "$SCRIPT_DIR/emover" ]]; then
+if [[ -n "${BASH_SOURCE[0]:-}" ]]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+else
+    SCRIPT_DIR=""
+fi
+
+if [[ -n "$SCRIPT_DIR" && -f "$SCRIPT_DIR/emover" ]]; then
     # Local installation
     cp "$SCRIPT_DIR/emover" "$INSTALL_DIR/emover"
 else
