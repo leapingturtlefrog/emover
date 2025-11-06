@@ -158,7 +158,7 @@ process_file() {
     # Check if should be excluded
     if should_exclude "$file"; then
         if [[ "$VERBOSE" == true ]]; then
-            echo -e "${YELLOW}⏭️  Excluding: $file${NC}"
+            echo -e "${YELLOW}  Excluding: $file${NC}"
         fi
         return
     fi
@@ -166,7 +166,7 @@ process_file() {
     # Check if binary
     if is_binary "$file"; then
         if [[ "$VERBOSE" == true ]]; then
-            echo -e "${YELLOW}⏭️  Skipping binary file: $file${NC}"
+            echo -e "${YELLOW}  Skipping binary file: $file${NC}"
         fi
         return
     fi
@@ -174,14 +174,14 @@ process_file() {
     # Create temp file
     local temp_file=$(mktemp)
 
-    # Remove emojis using sed with comprehensive Unicode ranges
+    # Remove emojis (traditional emojis only, keeps Unicode symbols like ✓ ★ ⚠)
     # This uses Perl regex for better Unicode support
     if command -v perl &> /dev/null; then
-        # Use Perl for comprehensive emoji removal
-        perl -C -pe 's/[\x{1F600}-\x{1F64F}]|[\x{1F300}-\x{1F5FF}]|[\x{1F680}-\x{1F6FF}]|[\x{1F1E0}-\x{1F1FF}]|[\x{2600}-\x{26FF}]|[\x{2700}-\x{27BF}]|[\x{1F900}-\x{1F9FF}]|[\x{1F018}-\x{1F270}]|[\x{238C}-\x{2454}]|[\x{20D0}-\x{20FF}]|[\x{FE00}-\x{FE0F}]|[\x{1F004}]|[\x{1F0CF}]|[\x{1F170}-\x{1F251}]|[\x{1F004}-\x{1F9E6}]|[\x{200D}]|[\x{2640}-\x{2642}]|[\x{2600}-\x{2B55}]|[\x{23CF}]|[\x{23E9}-\x{23FA}]|[\x{231A}-\x{231B}]|[\x{2328}]|[\x{23CF}]|[\x{23E9}-\x{23FA}]|[\x{25AA}-\x{25AB}]|[\x{25B6}]|[\x{25C0}]|[\x{25FB}-\x{25FE}]|[\x{2934}-\x{2935}]|[\x{2B05}-\x{2B07}]|[\x{2B1B}-\x{2B1C}]|[\x{3030}]|[\x{303D}]|[\x{3297}]|[\x{3299}]|[\x{1FA70}-\x{1FAFF}]|[\x{E0020}-\x{E007F}]//g' "$file" > "$temp_file"
+        # Use Perl for emoji removal - focused on actual emoji ranges
+        perl -C -pe 's/[\x{1F600}-\x{1F64F}]|[\x{1F300}-\x{1F5FF}]|[\x{1F680}-\x{1F6FF}]|[\x{1F900}-\x{1F9FF}]|[\x{1FA70}-\x{1FAFF}]|[\x{1F1E0}-\x{1F1FF}]|[\x{1F004}]|[\x{1F0CF}]|[\x{1F170}-\x{1F251}]|[\x{FE00}-\x{FE0F}]|[\x{200D}]//g' "$file" > "$temp_file"
     else
         # Fallback to sed (less comprehensive but works without Perl)
-        LC_ALL=C sed 's/[\xF0\x9F[\x98-\x9F][\x80-\xBF]]//g; s/[\xE2[\x80-\xBF][\x80-\xBF]]//g' "$file" > "$temp_file"
+        LC_ALL=C sed 's/[\xF0\x9F[\x98-\x9F][\x80-\xBF]]//g' "$file" > "$temp_file"
     fi
 
     # Check if file was modified
@@ -201,14 +201,14 @@ process_file() {
         FILES_MODIFIED=$((FILES_MODIFIED + 1))
 
         if [[ "$DRY_RUN" == true ]]; then
-            echo -e "${BLUE}🔍 Would remove ~${emojis_in_file} emoji(s) from: $file${NC}"
+            echo -e "${BLUE} Would remove ~${emojis_in_file} emoji(s) from: $file${NC}"
         else
             cp "$temp_file" "$file"
-            echo -e "${GREEN}✓ Removed ~${emojis_in_file} emoji(s) from: $file${NC}"
+            echo -e "${GREEN} Removed ~${emojis_in_file} emoji(s) from: $file${NC}"
         fi
     else
         if [[ "$VERBOSE" == true ]]; then
-            echo -e "${GREEN}✓ No emojis found: $file${NC}"
+            echo -e "${GREEN} No emojis found: $file${NC}"
         fi
     fi
 
@@ -226,7 +226,7 @@ main() {
     fi
 
     # Print header
-    echo "🧹 Emover - Emoji Removal Tool"
+    echo " Emover - Emoji Removal Tool"
     echo ""
     echo "Target directory: $(cd "$DIRECTORY" && pwd)"
     echo "Dry run: $DRY_RUN"
@@ -266,14 +266,14 @@ main() {
 
     # Print summary
     echo ""
-    echo -e "${GREEN}✅ Done!${NC}"
+    echo -e "${GREEN} Done!${NC}"
     echo "Files processed: $FILES_PROCESSED"
     echo "Files modified: $FILES_MODIFIED"
     echo "Emojis removed (approx): $EMOJIS_REMOVED"
 
     if [[ "$DRY_RUN" == true ]]; then
         echo ""
-        echo -e "${YELLOW}⚠️  This was a dry run. No files were actually modified.${NC}"
+        echo -e "${YELLOW}  This was a dry run. No files were actually modified.${NC}"
     fi
 }
 
