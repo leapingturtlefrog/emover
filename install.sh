@@ -9,6 +9,8 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
+GITHUB_RAW_URL="https://raw.githubusercontent.com/leapingturtlefrog/emover/main/emover"
+
 # Determine installation directory
 if [[ "$EUID" -eq 0 ]]; then
     # Running as root, install system-wide
@@ -29,11 +31,27 @@ if [[ ! -d "$INSTALL_DIR" ]]; then
     mkdir -p "$INSTALL_DIR"
 fi
 
-# Copy the script
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "Installing emover..."
 
-if cp "$SCRIPT_DIR/emover" "$INSTALL_DIR/emover"; then
+# Check if we have the script locally, otherwise download it
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$SCRIPT_DIR/emover" ]]; then
+    # Local installation
+    cp "$SCRIPT_DIR/emover" "$INSTALL_DIR/emover"
+else
+    # Download from GitHub
+    echo "Downloading from GitHub..."
+    if command -v curl &> /dev/null; then
+        curl -fsSL "$GITHUB_RAW_URL" -o "$INSTALL_DIR/emover"
+    elif command -v wget &> /dev/null; then
+        wget -q "$GITHUB_RAW_URL" -O "$INSTALL_DIR/emover"
+    else
+        echo -e "${RED}✗ Neither curl nor wget found. Please install one of them.${NC}"
+        exit 1
+    fi
+fi
+
+if [[ -f "$INSTALL_DIR/emover" ]]; then
     chmod +x "$INSTALL_DIR/emover"
     echo -e "${GREEN}✓ Successfully installed emover to $INSTALL_DIR${NC}"
 else
