@@ -4,43 +4,41 @@ Remove all emojis from your codebase. Works with any file type.
 
 ## Install
 
-**Linux/Mac:**
+### Mac/Linux
 ```bash
-git clone https://github.com/leapingturtlefrog/emover.git
-cd emover
-./install.sh
+curl -fsSL https://raw.githubusercontent.com/leapingturtlefrog/emover/main/install.sh | bash
 ```
 
-**Windows (PowerShell):**
+### Windows
 ```powershell
-git clone https://github.com/leapingturtlefrog/emover.git
-cd emover
-.\install.ps1
+iwr -useb https://raw.githubusercontent.com/leapingturtlefrog/emover/main/install.ps1 | iex
 ```
 
 ## Usage
 
-**Linux/Mac:**
+### Mac/Linux
 ```bash
 emover                      # Process current directory
 emover ./src                # Process specific directory
 emover --dry-run ./code     # Preview changes
 emover --skip-markdown .    # Skip markdown files
 emover -e "*.md" ./project  # Exclude patterns
+emover -v ./code            # Verbose output
 ```
 
-**Windows (PowerShell):**
+### Windows
 ```powershell
-.\emover.ps1                        # Process current directory
-.\emover.ps1 -Directory ./src       # Process specific directory
-.\emover.ps1 -DryRun                # Preview changes
-.\emover.ps1 -SkipMarkdown          # Skip markdown files
-.\emover.ps1 -Exclude "*.md","*.txt"  # Exclude patterns
+emover.ps1                          # Process current directory
+emover.ps1 -Directory ./src         # Process specific directory
+emover.ps1 -DryRun                  # Preview changes
+emover.ps1 -SkipMarkdown            # Skip markdown files
+emover.ps1 -Exclude "*.md","*.txt"  # Exclude patterns
+emover.ps1 -Verbose                 # Verbose output
 ```
 
 ## Options
 
-**Bash:**
+### Mac/Linux
 ```
 emover [OPTIONS] [DIRECTORY]
 
@@ -53,7 +51,7 @@ Options:
   --version              Show version
 ```
 
-**PowerShell:**
+### Windows
 ```
 emover.ps1 [OPTIONS] [DIRECTORY]
 
@@ -76,7 +74,7 @@ Options:
 
 ## Requirements
 
-**Linux/Mac:** Bash 4.0+, Perl (optional, for better detection)
+**Mac/Linux:** Bash 4.0+, Perl (optional, for better detection)
 
 **Windows:** PowerShell 5.1+ or PowerShell Core 7+
 

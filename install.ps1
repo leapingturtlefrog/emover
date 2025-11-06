@@ -5,24 +5,27 @@
     Emover Installation Script for Windows/PowerShell
 
 .DESCRIPTION
-    Installs emover to your system from the local directory.
+    Installs emover to your system. Can be run locally or via web install.
 
 .EXAMPLE
     .\install.ps1
-    Run installation
+    Run locally
+
+.EXAMPLE
+    iwr -useb https://raw.githubusercontent.com/leapingturtlefrog/emover/main/install.ps1 | iex
+    Install from GitHub
 #>
 
 $ErrorActionPreference = 'Stop'
 
+$GITHUB_RAW_URL = "https://raw.githubusercontent.com/leapingturtlefrog/emover/main/emover.ps1"
+
 # Determine installation directory
 if ($IsWindows -or $env:OS -eq "Windows_NT") {
-    # Windows: Use local AppData
     $INSTALL_DIR = "$env:LOCALAPPDATA\Programs\emover"
 } elseif ($IsMacOS -or $IsLinux) {
-    # Unix: Use .local/bin
     $INSTALL_DIR = "$HOME/.local/bin"
 } else {
-    # Fallback
     $INSTALL_DIR = "$HOME/.local/bin"
 }
 
@@ -40,18 +43,30 @@ if (-not (Test-Path $INSTALL_DIR)) {
 Write-Host "Installing emover..."
 
 # Check if we have the script locally
-$scriptPath = Join-Path $PSScriptRoot "emover.ps1"
-if (-not (Test-Path $scriptPath)) {
-    Write-Host "✗ Error: emover.ps1 not found in $PSScriptRoot" -ForegroundColor Red
-    exit 1
+$scriptPath = if ($PSScriptRoot) { Join-Path $PSScriptRoot "emover.ps1" } else { "" }
+
+if ($scriptPath -and (Test-Path $scriptPath)) {
+    # Local installation
+    Copy-Item -Path $scriptPath -Destination (Join-Path $INSTALL_DIR "emover.ps1") -Force
+    Write-Host "Installed from local directory"
+} else {
+    # Download from GitHub
+    Write-Host "Downloading from GitHub..."
+    try {
+        $destination = Join-Path $INSTALL_DIR "emover.ps1"
+        Invoke-WebRequest -Uri $GITHUB_RAW_URL -OutFile $destination -UseBasicParsing
+        Write-Host "Downloaded from GitHub"
+    } catch {
+        Write-Host "✗ Download failed: $($_.Exception.Message)" -ForegroundColor Red
+        exit 1
+    }
 }
 
-# Copy script
-try {
-    Copy-Item -Path $scriptPath -Destination (Join-Path $INSTALL_DIR "emover.ps1") -Force
+$installedScript = Join-Path $INSTALL_DIR "emover.ps1"
+if (Test-Path $installedScript) {
     Write-Host "✓ Successfully installed emover to $INSTALL_DIR" -ForegroundColor Green
-} catch {
-    Write-Host "✗ Installation failed: $($_.Exception.Message)" -ForegroundColor Red
+} else {
+    Write-Host "✗ Installation failed" -ForegroundColor Red
     exit 1
 }
 
