@@ -1,4 +1,4 @@
-# <img src="favicon.ico" alt="Emover" width="48" height="48" align="center"> Emover - Emoji Remover
+# <img src="favicon.ico" alt="Emover" width="48" height="48" align="center">Emover - Emoji Remover
 
 Remove emojis from your codebase and files. Blazingly fast, simple, and cross-platform.
 
