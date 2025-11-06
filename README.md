@@ -19,29 +19,30 @@ irm https://emover.sh/install.ps1 | iex
 ## Usage
 
 ```bash
-emover                                              # Current directory
-emover ./src                                        # Specific directory
-emover --dry-run ./code                             # Preview changes
-emover --skip ./docs                                # Skip markdown files
-emover --exclude "*.md" --exclude "*.txt" ./project # Exclude patterns
+emover                             # Current directory (asks for confirmation)
+emover -y ./src ./lib              # Auto-confirm, multiple directories
+emover file.txt src/ lib/test.rs   # Specific files + directories
+emover -e "*.md" "*.txt" .         # Exclude patterns
 ```
 
 ## Options
 
 ```
--d, --dry-run          Preview changes only
--e, --exclude PATTERN  Exclude file pattern
---skip                 Skip markdown files
--h, --help             Show help
+-y, --yes              Skip confirmation prompt
+-e, --exclude [PATTERNS]...  Exclude file patterns (e.g., -e "*.md" "*.txt")
+--no-gitignore         Don't respect .gitignore
+--keep-symbols         Keep Unicode symbols (e.g., ✓ ★ ⚠)
 -V, --version          Show version
+-h, --help             Show help
 ```
 
 ## What it does
 
 - Scans all text files in parallel
-- Removes Unicode emojis (preserves symbols like ✓ ★ ⚠)
+- Respects .gitignore by default
+- Asks for confirmation before modifying
+- Removes Unicode emojis and symbols
 - Skips binary files automatically
-- Excludes .git and node_modules
 
 ## Performance
 
