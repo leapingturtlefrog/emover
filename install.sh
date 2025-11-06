@@ -18,7 +18,7 @@ else
     INSTALL_DIR="$HOME/.local/bin"
 fi
 
-echo "🧹 Emover Installation"
+echo "Emover Installation"
 echo ""
 echo "Installation directory: $INSTALL_DIR"
 echo ""
@@ -66,7 +66,7 @@ fi
 # Check if install directory is in PATH
 if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
     echo ""
-    echo -e "${YELLOW}⚠️  Warning: $INSTALL_DIR is not in your PATH${NC}"
+    echo -e "${YELLOW}⚠ Warning: $INSTALL_DIR is not in your PATH${NC}"
     echo ""
     echo "Add it to your PATH by adding this line to your shell config:"
     echo ""

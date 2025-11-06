@@ -185,10 +185,11 @@ process_file() {
     # This uses Perl regex for better Unicode support
     if command -v perl &> /dev/null; then
         # Use Perl for emoji removal - focused on actual emoji ranges
-        perl -C -pe 's/[\x{1F600}-\x{1F64F}]|[\x{1F300}-\x{1F5FF}]|[\x{1F680}-\x{1F6FF}]|[\x{1F900}-\x{1F9FF}]|[\x{1FA70}-\x{1FAFF}]|[\x{1F1E0}-\x{1F1FF}]|[\x{1F004}]|[\x{1F0CF}]|[\x{1F170}-\x{1F251}]|[\x{FE00}-\x{FE0F}]|[\x{200D}]//g' "$file" > "$temp_file"
+        # Also removes one trailing space after emoji to avoid leftover spaces
+        perl -C -pe 's/([\x{1F600}-\x{1F64F}]|[\x{1F300}-\x{1F5FF}]|[\x{1F680}-\x{1F6FF}]|[\x{1F900}-\x{1F9FF}]|[\x{1FA70}-\x{1FAFF}]|[\x{1F1E0}-\x{1F1FF}]|[\x{1F004}]|[\x{1F0CF}]|[\x{1F170}-\x{1F251}]|[\x{FE00}-\x{FE0F}]|[\x{200D}]) ?//g' "$file" > "$temp_file"
     else
         # Fallback to sed (less comprehensive but works without Perl)
-        LC_ALL=C sed 's/[\xF0\x9F[\x98-\x9F][\x80-\xBF]]//g' "$file" > "$temp_file"
+        LC_ALL=C sed 's/[\xF0\x9F[\x98-\x9F][\x80-\xBF]] \?//g' "$file" > "$temp_file"
     fi
 
     # Check if file was modified

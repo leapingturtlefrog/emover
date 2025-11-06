@@ -29,7 +29,7 @@ if ($IsWindows -or $env:OS -eq "Windows_NT") {
     $INSTALL_DIR = "$HOME/.local/bin"
 }
 
-Write-Host "🧹 Emover Installation" -ForegroundColor Cyan
+Write-Host "Emover Installation" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Installation directory: $INSTALL_DIR"
 Write-Host ""
@@ -74,7 +74,7 @@ if (Test-Path $installedScript) {
 $pathVariable = if ($IsWindows -or $env:OS -eq "Windows_NT") { $env:Path } else { $env:PATH }
 if ($pathVariable -notlike "*$INSTALL_DIR*") {
     Write-Host ""
-    Write-Host "⚠️  Warning: $INSTALL_DIR is not in your PATH" -ForegroundColor Yellow
+    Write-Host "⚠ Warning: $INSTALL_DIR is not in your PATH" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "Add it to your PATH:"
     Write-Host ""

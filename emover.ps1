@@ -68,7 +68,8 @@ param(
 $VERSION = "1.0.0"
 
 # Emoji regex pattern (traditional emojis only)
-$EMOJI_PATTERN = '[\x{1F600}-\x{1F64F}]|[\x{1F300}-\x{1F5FF}]|[\x{1F680}-\x{1F6FF}]|[\x{1F900}-\x{1F9FF}]|[\x{1FA70}-\x{1FAFF}]|[\x{1F1E0}-\x{1F1FF}]|[\x{1F004}]|[\x{1F0CF}]|[\x{1F170}-\x{1F251}]|[\x{FE00}-\x{FE0F}]|[\x{200D}]'
+# Also removes one trailing space after emoji to avoid leftover spaces
+$EMOJI_PATTERN = '([\x{1F600}-\x{1F64F}]|[\x{1F300}-\x{1F5FF}]|[\x{1F680}-\x{1F6FF}]|[\x{1F900}-\x{1F9FF}]|[\x{1FA70}-\x{1FAFF}]|[\x{1F1E0}-\x{1F1FF}]|[\x{1F004}]|[\x{1F0CF}]|[\x{1F170}-\x{1F251}]|[\x{FE00}-\x{FE0F}]|[\x{200D}]) ?'
 
 # Stats
 $script:FilesProcessed = 0
@@ -173,7 +174,7 @@ function Remove-EmojisFromFile {
     # Check if should be excluded
     if (Test-ShouldExclude -FilePath $FilePath -ExcludePatterns $Exclude) {
         if ($IsVerbose) {
-            Write-Host "⏭️  Excluding: $FilePath" -ForegroundColor Yellow
+            Write-Host "⏭ Excluding: $FilePath" -ForegroundColor Yellow
         }
         return
     }
@@ -181,7 +182,7 @@ function Remove-EmojisFromFile {
     # Check if binary
     if (Test-BinaryFile -FilePath $FilePath) {
         if ($IsVerbose) {
-            Write-Host "⏭️  Skipping binary file: $FilePath" -ForegroundColor Yellow
+            Write-Host "⏭ Skipping binary file: $FilePath" -ForegroundColor Yellow
         }
         return
     }
@@ -204,7 +205,7 @@ function Remove-EmojisFromFile {
         $newContent = [regex]::Replace($content, $EMOJI_PATTERN, '')
 
         if ($IsDryRun) {
-            Write-Host "🔍 Would remove $emojiCount emoji(s) from: $FilePath" -ForegroundColor Cyan
+            Write-Host "Would remove $emojiCount emoji(s) from: $FilePath" -ForegroundColor Cyan
         }
         else {
             Set-Content -Path $FilePath -Value $newContent -Encoding UTF8 -NoNewline
@@ -238,7 +239,7 @@ if (-not (Test-Path -Path $Directory -PathType Container)) {
 }
 
 # Print header
-Write-Host "🧹 Emover - Emoji Removal Tool"
+Write-Host "Emover - Emoji Removal Tool"
 Write-Host ""
 Write-Host "Target directory: $(Resolve-Path $Directory)"
 Write-Host "Dry run: $DryRun"
@@ -294,5 +295,5 @@ Write-Host "Emojis removed: $script:EmojisRemoved"
 
 if ($DryRun) {
     Write-Host ""
-    Write-Host "⚠️  This was a dry run. No files were actually modified." -ForegroundColor Yellow
+    Write-Host "⚠ This was a dry run. No files were actually modified." -ForegroundColor Yellow
 }

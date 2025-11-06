@@ -67,7 +67,7 @@ Options:
 ## What it does
 
 - Finds all text files in a directory
-- Removes traditional emojis (😀 🚀 🎉) using Unicode regex
+- Removes traditional emojis () using Unicode regex
 - Keeps Unicode symbols (✓ ★ ⚠ © →)
 - Skips binary files automatically
 - Excludes common directories (node_modules, .git, etc.)
