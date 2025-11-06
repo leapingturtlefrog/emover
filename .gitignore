@@ -1,16 +1,3 @@
-# macOS
+emover/target/
+emover/Cargo.lock
 .DS_Store
-
-# Test files
-test-repos/
-
-# Editor files
-*.swp
-*.swo
-*~
-.vscode/
-.idea/
-
-# Backup files
-*.bak
-*.backup
