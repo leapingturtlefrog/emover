@@ -5,7 +5,7 @@ use std::{fs, io::{self, Write}, path::PathBuf};
 use walkdir::WalkDir;
 
 #[derive(Parser)]
-#[command(name = "emover", version = "1.0.0", about = "Emojie Remover - Remove emojis from files")]
+#[command(name = "emover", version = "1.0.0", about = "Emoji Remover - Remove emojis from files")]
 struct Args {
     #[arg(default_value = ".")]
     paths: Vec<PathBuf>,
