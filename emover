@@ -131,21 +131,28 @@ should_exclude() {
 # Check if file is binary
 is_binary() {
     local file="$1"
+    local ext="${file##*.}"
 
-    # Use file command if available
-    if command -v file &> /dev/null; then
-        if file "$file" | grep -q "text"; then
+    # Known text file extensions (always treat as text)
+    case "$ext" in
+        txt|md|markdown|html|htm|css|js|jsx|ts|tsx|json|xml|yml|yaml|toml|ini|cfg|conf|py|rb|java|c|cpp|h|hpp|cs|go|rs|sh|bash|zsh|fish|php|pl|lua|vim|sql|r|swift|kt|scala|clj|ex|exs|erl|hrl|hs|ml|fs|pas|vb|ps1|psm1|psd1)
             return 1
-        else
-            return 0
-        fi
-    fi
+            ;;
+    esac
 
-    # Fallback: check for null bytes
+    # Check for null bytes (definitive binary indicator)
     if LC_ALL=C grep -q $'\0' "$file" 2>/dev/null; then
         return 0
     fi
 
+    # Use file command if available (case-insensitive text check)
+    if command -v file &> /dev/null; then
+        if file "$file" | grep -iq "text"; then
+            return 1
+        fi
+    fi
+
+    # Default to treating as text if uncertain
     return 1
 }
 

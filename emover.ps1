@@ -104,6 +104,22 @@ Examples:
 function Test-BinaryFile {
     param([string]$FilePath)
 
+    # Known text file extensions (always treat as text)
+    $textExtensions = @(
+        '.txt', '.md', '.markdown', '.html', '.htm', '.css', '.js', '.jsx', '.ts', '.tsx',
+        '.json', '.xml', '.yml', '.yaml', '.toml', '.ini', '.cfg', '.conf', '.py', '.rb',
+        '.java', '.c', '.cpp', '.h', '.hpp', '.cs', '.go', '.rs', '.sh', '.bash', '.zsh',
+        '.fish', '.php', '.pl', '.lua', '.vim', '.sql', '.r', '.swift', '.kt', '.scala',
+        '.clj', '.ex', '.exs', '.erl', '.hrl', '.hs', '.ml', '.fs', '.pas', '.vb',
+        '.ps1', '.psm1', '.psd1'
+    )
+
+    $ext = [System.IO.Path]::GetExtension($FilePath).ToLower()
+    if ($textExtensions -contains $ext) {
+        return $false
+    }
+
+    # Check for null bytes (definitive binary indicator)
     try {
         $bytes = [System.IO.File]::ReadAllBytes($FilePath)
         $checkLength = [Math]::Min($bytes.Length, 8000)
@@ -116,7 +132,8 @@ function Test-BinaryFile {
         return $false
     }
     catch {
-        return $true
+        # Default to text if uncertain
+        return $false
     }
 }
 
